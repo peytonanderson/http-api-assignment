@@ -6,14 +6,68 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+      const handleResponse = (xhr) => {
+        const type = xhr.getResponseHeader('content-type');
+        const content = document.querySelector('#content');
+        const h1 = document.createElement('h1');
+        const p = document.createElement('p');
+        content.innerHTML = '';
 
+        if (xhr.status == 200) {
+            h1.textContent = 'Success';
+            p.textContent = 'Message: This is a successful response';
+        } else if (xhr.status == 400) {
+            h1.textContent = 'Bad Request';
+            p.textContent = 'Message: Missing valid query parameter set to true';
+        } else if (xhr.status == 401) {
+            h1.textContent = 'Unauthorized';
+            p.textContent = 'Message: Missing loggedIn query parameter set to yes';
+        } else if (xhr.status == 403) {
+            h1.textContent = 'Forbidden';
+            p.textContent = 'Message: You do not have access to this content.';
+        } else if (xhr.status == 404) {
+            h1.textContent = 'Resource Not Found';
+            p.textContent = 'Message: The page you are looking for was not found.';
+        } else if (xhr.status == 500) {
+            h1.textContent = 'Internal Server Error';
+            p.textContent = 'Message: Internal Server Error. Something went wrong.';
+        } else if (xhr.status == 501) {
+            h1.textContent = 'Not Implemented';
+            p.textContent = 'Message: A get request for this page has not been implemented yet. Check again later for updated content.';
+        }
+
+        content.appendChild(h1);
+        content.appendChild(p);
+
+        console.log(xhr.response);
+      }
+
+      const sendAjax = (url, acceptedType) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.setRequestHeader("Accept", acceptedType);
+        xhr.onload = () => handleResponse(xhr);
+        xhr.send();
+      }
+
+      const init = () => {
+        const page = document.querySelector('#page');
+        const type = document.querySelector('#type');
+        const sendButton = document.querySelector('#send');
+
+        const send = () => sendAjax(page.value, type.value);
+
+        sendButton.addEventListener('click', send);
+      }
+
+      window.onload = init;
   </script>
 </head>
 <body>
   <section id="top">
     <h3>Status Code Tests</h3>
     <select id="page">
-      <option value="/success">Success</option>
+      <option value="/success" selected>Success</option>
       <option value="/badRequest">Bad Request</option>
       <option value="/unauthorized">Unauthorized</option>
       <option value="/forbidden">Forbidden</option>
@@ -22,7 +76,7 @@
       <option value="/notFound">Not Found</option>
     </select>
     <select id="type">
-      <option value="application/json">JSON</option>
+      <option value="application/json" selected>JSON</option>
       <option value="text/xml">XML</option>
     </select>
     <button id="send">Send</button>
